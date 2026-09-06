@@ -18,97 +18,100 @@ param(
 # Loader 版本
 # ============================================================
 
-$MowLoaderVersion = "1.0.0"
+$MowLoaderVersion = "1.0.1"
 
 
 # ============================================================
 # Console Helpers
 # ============================================================
 
-$consoleHelpers = {
+$consoleHelpersSource = @'
+function _mow_write {
+    param(
+        [string]$Message,
+        [ConsoleColor]$Color,
+        [switch]$NoNewline
+    )
 
-    function _mow_write {
-        param(
-            [string]$Message,
-            [ConsoleColor]$Color,
-            [switch]$NoNewline
-        )
-
-        Write-Host `
-            $Message `
-            -ForegroundColor $Color `
-            -NoNewline:$NoNewline
-    }
-
-
-    function _mow_write_success {
-        param(
-            [string]$Message,
-            [switch]$NoNewline
-        )
-
-        _mow_write `
-            -Message $Message `
-            -Color Green `
-            -NoNewline:$NoNewline
-    }
-
-
-    function _mow_write_info {
-        param(
-            [string]$Message,
-            [switch]$NoNewline
-        )
-
-        _mow_write `
-            -Message $Message `
-            -Color Cyan `
-            -NoNewline:$NoNewline
-    }
-
-
-    function _mow_write_warning {
-        param(
-            [string]$Message,
-            [switch]$NoNewline
-        )
-
-        _mow_write `
-            -Message $Message `
-            -Color Yellow `
-            -NoNewline:$NoNewline
-    }
-
-
-    function _mow_write_error {
-        param(
-            [string]$Message,
-            [switch]$NoNewline
-        )
-
-        _mow_write `
-            -Message $Message `
-            -Color Red `
-            -NoNewline:$NoNewline
-    }
-
-
-    function _mow_write_label {
-        param(
-            [string]$Label,
-            [string]$Value
-        )
-
-        _mow_write_info `
-            -Message $Label `
-            -NoNewline
-
-        Write-Host $Value
-    }
+    Write-Host `
+        $Message `
+        -ForegroundColor $Color `
+        -NoNewline:$NoNewline
 }
 
 
+function _mow_write_success {
+    param(
+        [string]$Message,
+        [switch]$NoNewline
+    )
+
+    _mow_write `
+        -Message $Message `
+        -Color Green `
+        -NoNewline:$NoNewline
+}
+
+
+function _mow_write_info {
+    param(
+        [string]$Message,
+        [switch]$NoNewline
+    )
+
+    _mow_write `
+        -Message $Message `
+        -Color Cyan `
+        -NoNewline:$NoNewline
+}
+
+
+function _mow_write_warning {
+    param(
+        [string]$Message,
+        [switch]$NoNewline
+    )
+
+    _mow_write `
+        -Message $Message `
+        -Color Yellow `
+        -NoNewline:$NoNewline
+}
+
+
+function _mow_write_error {
+    param(
+        [string]$Message,
+        [switch]$NoNewline
+    )
+
+    _mow_write `
+        -Message $Message `
+        -Color Red `
+        -NoNewline:$NoNewline
+}
+
+
+function _mow_write_label {
+    param(
+        [string]$Label,
+        [string]$Value
+    )
+
+    _mow_write_info `
+        -Message $Label `
+        -NoNewline
+
+    Write-Host $Value
+}
+'@
+
+
 # 載入 Console Helpers 給 Loader 使用
+$consoleHelpers = [scriptblock]::Create(
+    $consoleHelpersSource
+)
+
 . $consoleHelpers
 
 
@@ -184,7 +187,7 @@ try {
             $LoaderUrl,
             $FunctionsUrl,
             [string]$functionsSource,
-            $consoleHelpers
+            $consoleHelpersSource
         ) `
         -ScriptBlock {
 
@@ -195,7 +198,7 @@ try {
             [string]$LoaderUrl,
             [string]$FunctionsUrl,
             [string]$FunctionsSource,
-            [scriptblock]$ConsoleHelpers
+            [string]$ConsoleHelpersSource
         )
 
 
@@ -215,7 +218,11 @@ try {
         # 載入 Console Helpers
         # ========================================================
 
-        . $ConsoleHelpers
+        $consoleHelpers = [scriptblock]::Create(
+            $ConsoleHelpersSource
+        )
+
+        . $consoleHelpers
 
 
         # ========================================================
@@ -354,7 +361,8 @@ try {
 
         # ========================================================
         # 建立公開命令
-        # Prefix 空白時保留原名稱，有 Prefix 時自動加上前綴
+        # Prefix 空白時保留原名稱
+        # 有 Prefix 時，在 Module scope 建立 Prefix Function
         # ========================================================
 
         $publicFunctions = @()
@@ -367,13 +375,15 @@ try {
 
             $publicName = "$Prefix-$name"
 
-            $scriptBlock = (
+            $definition = (
                 Get-Item "Function:\$name"
-            ).ScriptBlock
+            ).Definition
 
-            Set-Item `
-                -Path "Function:\$publicName" `
-                -Value $scriptBlock
+            Invoke-Expression @"
+function $publicName {
+$definition
+}
+"@
 
             $publicFunctions += $publicName
         }
@@ -399,13 +409,15 @@ try {
 
             $targetName = $managementCommands[$name]
 
-            $scriptBlock = (
+            $definition = (
                 Get-Item "Function:\$targetName"
-            ).ScriptBlock
+            ).Definition
 
-            Set-Item `
-                -Path "Function:\$publicName" `
-                -Value $scriptBlock
+            Invoke-Expression @"
+function $publicName {
+$definition
+}
+"@
 
             $publicFunctions += $publicName
         }
