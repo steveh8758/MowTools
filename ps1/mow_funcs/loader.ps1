@@ -4,6 +4,10 @@ param(
     [string]$Prefix,
 
     [Parameter(Mandatory = $true)]
+    [AllowEmptyString()]
+    [string]$CommandSeparator,
+
+    [Parameter(Mandatory = $true)]
     [string]$BootstrapUrl,
 
     [Parameter(Mandatory = $true)]
@@ -182,6 +186,7 @@ try {
         -Name "MowTools" `
         -ArgumentList @(
             $Prefix,
+            $CommandSeparator,
             $MowLoaderVersion,
             $BootstrapUrl,
             $LoaderUrl,
@@ -193,6 +198,7 @@ try {
 
         param(
             [string]$Prefix,
+            [string]$CommandSeparator,
             [string]$LoaderVersion,
             [string]$BootstrapUrl,
             [string]$LoaderUrl,
@@ -207,6 +213,7 @@ try {
         # ========================================================
 
         $script:MowPrefix = $Prefix
+        $script:MowCommandSeparator = $CommandSeparator
         $script:MowLoaderVersion = $LoaderVersion
         $script:MowBootstrapUrl = $BootstrapUrl
         $script:MowLoaderUrl = $LoaderUrl
@@ -290,7 +297,7 @@ try {
             $prefixText = "<none>"
 
             if (-not [string]::IsNullOrWhiteSpace($script:MowPrefix)) {
-                $prefixText = "$($script:MowPrefix)-"
+                $prefixText = "$($script:MowPrefix)$script:MowCommandSeparator"
             }
 
             _mow_write_info `
@@ -373,7 +380,7 @@ try {
                 continue
             }
 
-            $publicName = "$Prefix-$name"
+            $publicName = "$Prefix$CommandSeparator$name"
 
             $definition = (
                 Get-Item "Function:\$name"
@@ -404,7 +411,7 @@ $definition
                 $publicName = $name
             }
             else {
-                $publicName = "$Prefix-$name"
+                $publicName = "$Prefix$CommandSeparator$name"
             }
 
             $targetName = $managementCommands[$name]
@@ -490,5 +497,5 @@ else {
         -NoNewline
 
     _mow_write_info `
-        -Message "$Prefix-"
+        -Message "$Prefix$CommandSeparator"
 }

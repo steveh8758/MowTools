@@ -3,12 +3,14 @@
 # ============================================================
 
 $Prefix = "mt"
+$CommandSeparator = "."
 
 $RepositoryRawUrl = "https://raw.githubusercontent.com/steveh8758/MowTools/main/ps1"
 
 $BootstrapUrl = "$RepositoryRawUrl/mow_funcs.ps1"
 $LoaderUrl = "$RepositoryRawUrl/mow_funcs/loader.ps1"
 $FunctionsUrl = "$RepositoryRawUrl/mow_funcs/functions.ps1"
+
 
 # ============================================================
 # 啟動 MowTools
@@ -39,10 +41,12 @@ try {
 
     & $loaderScript `
         -Prefix $Prefix `
+        -CommandSeparator $CommandSeparator `
         -BootstrapUrl $BootstrapUrl `
         -LoaderUrl $LoaderUrl `
         -FunctionsUrl $FunctionsUrl
 }
 catch {
-    Write-Host "Failed to start MowTools: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Failed to start MowTools: $($_.Exception.Message)" `
+        -ForegroundColor Red
 }

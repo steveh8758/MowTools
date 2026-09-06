@@ -4,6 +4,7 @@
 
 $script:MowFunctionsVersion = "1.0.0"
 
+
 # ============================================================
 # Console 顏色
 # ============================================================
@@ -15,6 +16,7 @@ $script:MowFunctionsVersion = "1.0.0"
 # _mow_write_error "Failed."
 #
 # Use -NoNewline to continue output on the same line.
+
 
 # ============================================================
 # Functions
