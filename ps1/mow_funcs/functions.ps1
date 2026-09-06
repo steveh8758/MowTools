@@ -33,7 +33,9 @@ function fp([int]$Port) {
         -ErrorAction SilentlyContinue
 
     if (-not $conn) {
-        Write-Host "Port $Port is free."
+        _mow_write_success `
+            -Message "Port $Port is free."
+
         return
     }
 
@@ -76,7 +78,9 @@ function kp([int]$Port) {
             -Unique
 
     if (-not $processIds) {
-        Write-Host "Port $Port is free."
+        _mow_write_success `
+            -Message "Port $Port is free."
+
         return
     }
 
@@ -87,11 +91,15 @@ function kp([int]$Port) {
                 -Force `
                 -ErrorAction Stop
 
-            Write-Host "Killed PID $processId on port $Port."
+            _mow_write_success `
+                -Message "Killed PID $processId on port $Port."
         }
         catch {
-            Write-Host "Failed to kill PID $processId : $($_.Exception.Message)"
+            _mow_write_error `
+                -Message "Failed to kill PID $processId : " `
+                -NoNewline
+
+            Write-Host $_.Exception.Message
         }
     }
 }
-
