@@ -22,6 +22,97 @@ $MowLoaderVersion = "1.0.0"
 
 
 # ============================================================
+# Console Helpers
+# ============================================================
+
+$consoleHelpers = {
+
+    function _mow_write {
+        param(
+            [string]$Message,
+            [ConsoleColor]$Color,
+            [switch]$NoNewline
+        )
+
+        Write-Host `
+            $Message `
+            -ForegroundColor $Color `
+            -NoNewline:$NoNewline
+    }
+
+
+    function _mow_write_success {
+        param(
+            [string]$Message,
+            [switch]$NoNewline
+        )
+
+        _mow_write `
+            -Message $Message `
+            -Color Green `
+            -NoNewline:$NoNewline
+    }
+
+
+    function _mow_write_info {
+        param(
+            [string]$Message,
+            [switch]$NoNewline
+        )
+
+        _mow_write `
+            -Message $Message `
+            -Color Cyan `
+            -NoNewline:$NoNewline
+    }
+
+
+    function _mow_write_warning {
+        param(
+            [string]$Message,
+            [switch]$NoNewline
+        )
+
+        _mow_write `
+            -Message $Message `
+            -Color Yellow `
+            -NoNewline:$NoNewline
+    }
+
+
+    function _mow_write_error {
+        param(
+            [string]$Message,
+            [switch]$NoNewline
+        )
+
+        _mow_write `
+            -Message $Message `
+            -Color Red `
+            -NoNewline:$NoNewline
+    }
+
+
+    function _mow_write_label {
+        param(
+            [string]$Label,
+            [string]$Value
+        )
+
+        _mow_write_info `
+            -Message $Label `
+            -NoNewline
+
+        Write-Host $Value
+    }
+}
+
+
+# 載入 Console Helpers 給 Loader 使用
+. $consoleHelpers
+
+
+# ============================================================
 # 檢查 Prefix
 # ============================================================
 
