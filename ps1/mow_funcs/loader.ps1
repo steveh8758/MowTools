@@ -120,7 +120,13 @@ if (
     -not [string]::IsNullOrWhiteSpace($Prefix) -and
     $Prefix -notmatch '^[A-Za-z0-9_]+$'
 ) {
-    Write-Host "Invalid prefix: $Prefix"
+    _mow_write_warning `
+        -Message "Invalid prefix: " `
+        -NoNewline
+
+    _mow_write_error `
+        -Message $Prefix
+
     return
 }
 
@@ -153,7 +159,12 @@ try {
     ) | Out-Null
 }
 catch {
-    Write-Host "Failed to load MowTools functions: $($_.Exception.Message)"
+    _mow_write_error `
+        -Message "Failed to load MowTools functions: " `
+        -NoNewline
+
+    Write-Host $_.Exception.Message
+
     return
 }
 
@@ -172,7 +183,8 @@ try {
             $BootstrapUrl,
             $LoaderUrl,
             $FunctionsUrl,
-            [string]$functionsSource
+            [string]$functionsSource,
+            $consoleHelpers
         ) `
         -ScriptBlock {
 
@@ -182,8 +194,14 @@ try {
             [string]$BootstrapUrl,
             [string]$LoaderUrl,
             [string]$FunctionsUrl,
-            [string]$FunctionsSource
+            [string]$FunctionsSource,
+            [scriptblock]$ConsoleHelpers
         )
+
+
+        # ========================================================
+        # Module 狀態
+        # ========================================================
 
         $script:MowPrefix = $Prefix
         $script:MowLoaderVersion = $LoaderVersion
@@ -191,6 +209,13 @@ try {
         $script:MowLoaderUrl = $LoaderUrl
         $script:MowFunctionsUrl = $FunctionsUrl
         $script:MowFunctionsVersion = "unknown"
+
+
+        # ========================================================
+        # 載入 Console Helpers
+        # ========================================================
+
+        . $ConsoleHelpers
 
 
         # ========================================================
@@ -261,15 +286,26 @@ try {
                 $prefixText = "$($script:MowPrefix)-"
             }
 
-            Write-Host "MowTools"
-            Write-Host "Loader    : $script:MowLoaderVersion"
-            Write-Host "Functions : $script:MowFunctionsVersion"
-            Write-Host "Prefix    : $prefixText"
+            _mow_write_info `
+                -Message "MowTools"
+
+            _mow_write_label `
+                -Label "Loader    : " `
+                -Value $script:MowLoaderVersion
+
+            _mow_write_label `
+                -Label "Functions : " `
+                -Value $script:MowFunctionsVersion
+
+            _mow_write_label `
+                -Label "Prefix    : " `
+                -Value $prefixText
         }
 
 
         function _mow_reload {
-            Write-Host "Reloading MowTools..."
+            _mow_write_info `
+                -Message "Reloading MowTools..."
 
             try {
                 $separator = "?"
@@ -296,13 +332,18 @@ try {
                 & $bootstrapScript
             }
             catch {
-                Write-Host "Reload failed: $($_.Exception.Message)"
+                _mow_write_error `
+                    -Message "Reload failed: " `
+                    -NoNewline
+
+                Write-Host $_.Exception.Message
             }
         }
 
 
         function _mow_clear {
-            Write-Host "MowTools unloaded."
+            _mow_write_success `
+                -Message "MowTools unloaded."
 
             Remove-Module `
                 -Name "MowTools" `
@@ -380,7 +421,12 @@ try {
     -ErrorAction Stop
 }
 catch {
-    Write-Host "Failed to create MowTools: $($_.Exception.Message)"
+    _mow_write_error `
+        -Message "Failed to create MowTools: " `
+        -NoNewline
+
+    Write-Host $_.Exception.Message
+
     return
 }
 
@@ -408,7 +454,12 @@ try {
             -ErrorAction Stop
 }
 catch {
-    Write-Host "Failed to import MowTools: $($_.Exception.Message)"
+    _mow_write_error `
+        -Message "Failed to import MowTools: " `
+        -NoNewline
+
+    Write-Host $_.Exception.Message
+
     return
 }
 
@@ -418,8 +469,14 @@ catch {
 # ============================================================
 
 if ([string]::IsNullOrWhiteSpace($Prefix)) {
-    Write-Host "MowTools loaded."
+    _mow_write_success `
+        -Message "MowTools loaded."
 }
 else {
-    Write-Host "MowTools loaded. Prefix: $Prefix-"
+    _mow_write_success `
+        -Message "MowTools loaded. Prefix: " `
+        -NoNewline
+
+    _mow_write_info `
+        -Message "$Prefix-"
 }
