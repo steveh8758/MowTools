@@ -1,35 +1,48 @@
-# === Port 相關 ===
+﻿# ============================================================
+# MowTools 入口設定
+# ============================================================
 
-function fp([int]$Port) {
-    $conn = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+$Prefix = "mt"  # 留空 "" 則直接使用 fp、kp
 
-    if (-not $conn) {
-        Write-Host "Port $Port is free."
-        return
+$RepositoryRawUrl = "https://raw.githubusercontent.com/steveh8758/MowTools/main/ps1"
+
+$BootstrapUrl = "$RepositoryRawUrl/mow_funcs.ps1"
+$LoaderUrl = "$RepositoryRawUrl/mow_funcs/loader.ps1"
+$FunctionsUrl = "$RepositoryRawUrl/mow_funcs/functions.ps1"
+
+# ============================================================
+# 啟動 MowTools
+# 正常情況下不需要修改以下內容
+# ============================================================
+
+try {
+    $separator = "?"
+
+    if ($LoaderUrl.Contains("?")) {
+        $separator = "&"
     }
 
-    $conn |
-        Select-Object LocalAddress, LocalPort, OwningProcess,
-        @{Name="ProcessName"; Expression={
-            (Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName
-        }},
-        @{Name="CommandLine"; Expression={
-            (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.OwningProcess)").CommandLine
-        }} |
-        Format-Table -AutoSize -Wrap
+    $loaderRequestUrl = (
+        $LoaderUrl +
+        $separator +
+        "_=" +
+        (Get-Date -Format "yyyyMMddHHmmssfff")
+    )
+
+    $loaderSource = Invoke-RestMethod `
+        -Uri $loaderRequestUrl `
+        -ErrorAction Stop
+
+    $loaderScript = [scriptblock]::Create(
+        [string]$loaderSource
+    )
+
+    & $loaderScript `
+        -Prefix $Prefix `
+        -BootstrapUrl $BootstrapUrl `
+        -LoaderUrl $LoaderUrl `
+        -FunctionsUrl $FunctionsUrl
 }
-
-function kp([int]$Port) {
-    $pids = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
-        Select-Object -ExpandProperty OwningProcess -Unique
-
-    if (-not $pids) {
-        Write-Host "Port $Port is free."
-        return
-    }
-
-    foreach ($processId in $pids) {
-        Stop-Process -Id $processId -Force
-        Write-Host "Killed PID $processId on port $Port."
-    }
+catch {
+    Write-Host "Failed to start MowTools: $($_.Exception.Message)"
 }
