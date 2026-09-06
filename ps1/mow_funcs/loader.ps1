@@ -1,4 +1,4 @@
-﻿param(
+param(
     [Parameter(Mandatory = $true)]
     [AllowEmptyString()]
     [string]$Prefix,
