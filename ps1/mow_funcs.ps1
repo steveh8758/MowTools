@@ -1,7 +1,14 @@
 # === Port 相關 ===
 
 function fp([int]$Port) {
-    Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+    $conn = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+
+    if (-not $conn) {
+        Write-Host "Port $Port is free."
+        return
+    }
+
+    $conn |
         Select-Object LocalAddress, LocalPort, OwningProcess,
         @{Name="ProcessName"; Expression={
             (Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName
