@@ -44,5 +44,5 @@ try {
         -FunctionsUrl $FunctionsUrl
 }
 catch {
-    Write-Host "Failed to start MowTools: $($_.Exception.Message)"
+    Write-Host "Failed to start MowTools: $($_.Exception.Message)" -ForegroundColor Red
 }
