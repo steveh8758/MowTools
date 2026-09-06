@@ -5,9 +5,22 @@
 $script:MowFunctionsVersion = "1.0.0"
 
 # ============================================================
+# Console 顏色
+# ============================================================
+# success = Green, info = Cyan, warning = Yellow, error = Red
+#
+# _mow_write_success "Done."
+# _mow_write_info "Loading..."
+# _mow_write_warning "Warning."
+# _mow_write_error "Failed."
+#
+# Use -NoNewline to continue output on the same line.
+
+# ============================================================
 # Functions
 #  -> 名稱以底線開頭，不對外公開。
 # ============================================================
+
 
 # ============================================================
 # Port 相關
