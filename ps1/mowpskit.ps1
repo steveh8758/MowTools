@@ -1,2 +1,2 @@
 # MowPSKit compatibility loader
-irm https://raw.githubusercontent.com/steveh8758/MowPSKit/main/dist/MowPSKit.ps1 | iex
+irm https://github.com/steveh8758/MowPSKit/releases/latest/download/MowPSKit.ps1 | iex
