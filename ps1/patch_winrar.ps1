@@ -1,31 +1,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-# ------------- WinRAR Installation -------------
-
-Write-Host "[INFO] Installing WinRAR..." -ForegroundColor Cyan
-
-if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    throw "winget is not installed or unavailable."
-}
-
-winget install `
-    --id RARLab.WinRAR `
-    --exact `
-    --source winget `
-    --silent `
-    --disable-interactivity `
-    --accept-package-agreements `
-    --accept-source-agreements
-
-if ($LASTEXITCODE -ne 0) {
-    throw "WinRAR installation failed. Exit code: $LASTEXITCODE"
-}
-
-Write-Host "[OK] WinRAR installed." -ForegroundColor Green
-
-# ------------- WinRAR Registration -------------
-
+# Base64-encoded WinRAR registration key
 $keyBase64 = @'
 UkFSIHJlZ2lzdHJhdGlvbiBkYXRhDQpXaW5SQVINClVubGltaXRlZCBDb21wYW55IExpY2Vuc2UN
 ClVJRD00YjkxNGZiNzcyYzgzNzZiZDg3ZA0KNjQxMjIxMjI1MGQ4N2Q5ODY2YWQxMmViOWY5MDBl
@@ -38,21 +14,16 @@ M2IxMDcwNDYyMWFkZTYwZTQwYQ0KZDY3OWM4MjU1Y2JjODMzNmY4ZTIzYzRiM2Y0NzhhNTI1NjFi
 ODYzM2I0NjAxMzYyMzQ5NzczDQo=
 '@
 
-# Decode Base64 and write the license file
+# Decode the registration key
 $keyBytes = [Convert]::FromBase64String(
     ($keyBase64 -replace '\s', '')
 )
 
+# Install to current user's WinRAR directory
 $keyDir = Join-Path $env:APPDATA 'WinRAR'
 $keyPath = Join-Path $keyDir 'rarreg.key'
 
 New-Item -ItemType Directory -Path $keyDir -Force | Out-Null
 [System.IO.File]::WriteAllBytes($keyPath, $keyBytes)
 
-# Verify the written license file
-if (-not (Test-Path $keyPath)) {
-    throw "WinRAR registration file was not created."
-}
-
-Write-Host "[OK] WinRAR registration file installed." -ForegroundColor Green
-Write-Host "[DONE] WinRAR setup completed." -ForegroundColor Cyan
+Write-Host "[OK] WinRAR registration key installed." -ForegroundColor Green
